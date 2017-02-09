@@ -13,10 +13,11 @@ Problems:
   * AT+RST resets multiple times, outputs a lot of garbage
 
 ## Connection
+```
 Serial connection (PC(USBtoSerial) <--> ESP8266): 3.3V, GND, RX-TX, TX-RX
 Chip enable (ESP8266): CHIP_EN -> 3.3V
 Boot flom flash (ESP8266): GPIO15 (IO15) -> GND
-
+```
 Power supply: Used second USBtoSerial to supply more power. Some resources state that Arduiono/USBtoSerial does not provide enough power.
 
 For me worked the speed of 115200 baud, some people reported speeds like 9600, 86400, 57600, ...
