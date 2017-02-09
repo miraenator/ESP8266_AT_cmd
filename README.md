@@ -28,6 +28,7 @@ else:
   print("No ttyUSB devices found...")
 ```
 ### Use your own device
+#### Without this lib
 ```python
 import serial
 
@@ -37,6 +38,18 @@ with serial.Serial(port="/dev/ttyUSB0", baudrate=115200) as ser:
         ser.readline()  #Echoed command 
         ser.readline()  #empty line
         ser.readline()  #response, should be OK/ERROR
+```
+#### With this lib
+```python
+import serial
+ser = serial.Serial(port="/dev/ttyUSB0", baudrate=115200)
+ser.isOpen()
+# Should output: True
+
+import ESP8266_ESP201
+e = ESP8266_ESP201.ESP8266_ESP201(serial_dev = ser)
+e.cmd_at()
+# Should output: {'status': True, 'data': []}
 ```
 ## Installation (Debian Jessie)
 ```bash
