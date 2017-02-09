@@ -58,7 +58,7 @@ class ESP8266_ESP201(object):
        Use with care.
        Returns: T/F
     """
-        self._log.warn("Probing devices (might be dangerous if multiple are connected)")
+        self._log.warn("Probing devices (might be dangerous if multiple are connected). Make sure the device is not used.")
         for dev in self.get_ttyUSB_devices():
             # self._log.debug("Probing device: {} with speed {}".format(dev, self._speed))
             if self.probe_ttyUSB_device(dev, self._speed):
