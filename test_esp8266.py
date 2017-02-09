@@ -4,7 +4,7 @@ import ESP8266_ESP201
 from time import sleep
 
 e = ESP8266_ESP201.ESP8266_ESP201()
-if e.findDevice():
+if e.find_device():
   print("----------AT------------")
   print(e.cmd_at())
   print("----------VERSION----")
@@ -33,6 +33,9 @@ if e.findDevice():
 
 
   e.close()
+else: 
+  print("No ttyUSB devices (responding to AT) found...")
+
 #print("OS Check: {}".format(e.check_OS()))
 #print("Devices: {}".format(e.get_ttyUSB_devices()))
 
