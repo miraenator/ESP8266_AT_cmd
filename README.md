@@ -8,6 +8,24 @@ Therefore I tried to make a python3 library.
 
 So far it works under Linux only and still did not manage to connect to an AP (client mode). (TODO)
 
+Problems:
+  * Upon start the module tries to connect, spontaneously resets multiple times (?power issue)
+  * AT+RST resets multiple times, outputs a lot of garbage
+
+## Connection
+Serial connection (PC(USBtoSerial) <--> ESP8266): 3.3V, GND, RX-TX, TX-RX
+Chip enable (ESP8266): CHIP_EN -> 3.3V
+Boot flom flash (ESP8266): GPIO15 (IO15) -> GND
+
+Power supply: Used second USBtoSerial to supply more power. Some resources state that Arduiono/USBtoSerial does not provide enough power.
+
+For me worked the speed of 115200 baud, some people reported speeds like 9600, 86400, 57600, ...
+
+Info about the connection (from the serial.Serial object):
+```
+Serial: (port='/dev/ttyUSB0', baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=None, xonxoff=False, rtscts=False, dsrdtr=False)
+```
+
 ## Example code
 Make sure you are not connected via minicom, or any other. (I.e. the /dev/ttyUSBX is not used by any other program)
 ### Autodetect the ttyUSB device
@@ -23,12 +41,13 @@ if e.find_device():
   print(e.get_version())
   print("---------WIFI MODE-----")
   mode = e.get_wifi_mode()
-  print("Mode: {}, {}".format(mode, e.decode_wifi_mode(mode[1][0])))
+  
 else: 
   print("No ttyUSB devices found...")
 ```
 ### Use your own device
 #### Without this lib
+You can use it as a simple test for your device.
 ```python
 import serial
 
@@ -51,6 +70,15 @@ e = ESP8266_ESP201.ESP8266_ESP201(serial_dev = ser)
 e.cmd_at()
 # Should output: {'status': True, 'data': []}
 ```
+#### Using minicom
+Use <Ctrl-m><Ctrl-j> after typing the command (without Enter). Or <Enter> and <Ctrl-j>.
+```bash
+minicom -b 115200 -D /dev/ttyUSB0
+AT<Ctrl-m><Ctrl-j>
+
+#<Ctrl-A> <X> to exit
+```
+
 ## Installation (Debian Jessie)
 ```bash
 # Install packages (under root)
