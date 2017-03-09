@@ -1,6 +1,8 @@
 # ESP8266_AT_cmd
 A simple python3 library for working with ESP8266 AT commands
 
+Command reference: https://room-15.github.io/blog/2015/03/26/esp8266-at-command-reference/
+
 I've recently acquired the ESP8266 ESP-201 module...
 And found manually entering the AT commands fatiguing.
 
@@ -11,13 +13,21 @@ So far it works under Linux only and still did not manage to connect to an AP (c
 Problems:
   * Upon start the module tries to connect, spontaneously resets multiple times (?power issue)
   * AT+RST resets multiple times, outputs a lot of garbage
+  * AT+CWLAP hangs sometimes (after AT+CWJAP?), maybe: http://www.esp8266.com/viewtopic.php?f=6&t=571
 
 ## Connection
+### ESP-201
 ```
 Serial connection (PC(USBtoSerial) <--> ESP8266): 3.3V, GND, RX-TX, TX-RX
 Chip enable (ESP8266): CHIP_EN -> 3.3V
 Boot flom flash (ESP8266): GPIO15 (IO15) -> GND
 ```
+### ESP-01
+```
+Serial connection (PC(USBtoSerial) <--> ESP8266): 3.3V, GND, RX-TX, TX-RX
+RESET (ESP8266): 3.3 V
+```
+### Power supply
 Power supply: Used second USBtoSerial to supply more power (needs around 300-400mA peak). Some resources state that Arduiono/USBtoSerial does not provide enough power.
 
 For me worked the speed of 115200 baud, some people reported speeds like 9600, 86400, 57600, ...

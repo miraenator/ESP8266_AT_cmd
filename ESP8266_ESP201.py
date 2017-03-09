@@ -1,6 +1,7 @@
 # Python3
 # Class for working with ESP8266 chip (ESP-201) via AT commands
 # Created 170208 by bursam: Get info from ESP8266 ESP-201 via AT commands
+# Updated 170309 by bursam: Works with ESP-01 (the easy testing cmd). The
 # Reference(s):
 #  http://room-15.github.io/blog/2015/03/26/esp8266-at-command-reference/
 
@@ -27,7 +28,7 @@ import glob
 # file permissions checking
 import os
 # check OS
-from sys import platform
+import sys
 # logging
 import logging
 # delays
@@ -46,12 +47,13 @@ class ESP8266_ESP201(object):
         Note: Based on various firmware versions, people have reported various speed working,
               such as: 9600, 57600, 76800, 115200, ...
     """
+        #logging.basicConfig(level=logging.DEBUG)
         logging.basicConfig(level=logging.INFO)
         self._log = logging.getLogger("ESP8266_ESP20")
         self._serial = serial_dev
         self._speed = speed
         if not self.check_OS():
-            self._log.error("Incorrect OS: {}".format(platform))
+            self._log.error("Incorrect OS: {}".format(sys.platform))
 
     def find_device(self):
         """Probes for available devices. Might be dangerous if multiple are connected.
@@ -152,7 +154,8 @@ class ESP8266_ESP201(object):
     def client_forget_AP(self):
         """Forgets the AP information. If you use AT+CWQAP (client_disconnect_AP()), the
        board disconnects, but after reset it retries the connection, which might lead
-       to resets/hanging."""
+       to resets/hanging.
+       Warning: ESP-01: Hangs """
         return self.at_command('AT+CWJAP=" "," "')
 
     def client_get_AP_connected_info(self):
@@ -230,6 +233,9 @@ class ESP8266_ESP201(object):
                 break
             elif tmp_response == b'busy p...':
                 # not sure what it means, happened when tried to configure AP (CWJAP). Module got stuck...
+                # busy p...: COmmand in progress, wait for OK
+                # busy s...: Send in progress, wait for OK
+                # busy: Not ready yet to receive an AT command
                 data.append(tmp_response)
                 break
             elif tmp_response == b'WIFI DISCONNECT':
@@ -273,9 +279,9 @@ class ESP8266_ESP201(object):
         """Checks the platform (for the access to serial devices.
        Currently only Linux is supported
        Returns: True if the platform is supported"""
-        if platform == "linux" or platform == "linux2":
+        if sys.platform == "linux" or sys.platform == "linux2":
             return True
-        self._log.error("Unsupported platform: {}".format(platform))
+        self._log.error("Unsupported platform: {}".format(sys.platform))
         return False
 
     def probe_at_supported(self, ser):
@@ -352,18 +358,26 @@ class ESP8266_ESP201(object):
             self._log.debug(
                 "Device not writable: {} (Make sure the user is a member of the 'dialout' group.)".format(device))
             return False
-        with serial.Serial(port=device, baudrate=speed) as ser:
-            if not ser.isOpen():
-                self._log.debug("Cannot open serial device: {} with speed {}".format(device, speed))
-                return False
-            elif not ser.readable():
-                self._log.debug("Device is not readable: {}".format(device))
-                return False
-            elif not ser.writable():
-                self._log.debug("Device is not writable: {}".format(device))
-                return False
-            else:
-                return self.probe_at_supported(ser)
+        try:
+            with serial.Serial(port=device, baudrate=speed) as ser:
+                if not ser.isOpen():
+                    self._log.debug("Cannot open serial device: {} with speed {}".format(device, speed))
+                    return False
+                elif not ser.readable():
+                    self._log.debug("Device is not readable: {}".format(device))
+                    return False
+                elif not ser.writable():
+                    self._log.debug("Device is not writable: {}".format(device))
+                    return False
+                else:
+                    try:
+                        return self.probe_at_supported(ser)
+                    except:
+                        e = sys.exc_info()[0]
+                        self._log.debug("Device exception1: {}: {}".format(device, e))
+        except:
+            e = sys.exc_info()[0]
+            self._log.debug("Device exception2: {}: {}".format(device, e))
 
     def close(self):
         return self._serial.close()
