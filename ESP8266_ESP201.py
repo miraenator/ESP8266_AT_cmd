@@ -180,15 +180,20 @@ class ESP8266_ESP201(object):
         else:
             return "Unknown: {}".format(mode)
 
-    def at_command(self, cmd="AT", TIMEOUT=30):
+    def at_command(self, cmd="AT", TIMEOUT=30, CNT_WHITES_LIMIT=10):
         """A general function for calling an AT command, waiting for OK/Error response.
+           Checks for empty lines, aborts if too many (default: 10)
        Arguments:
          cmd:    command to be executed, default: "AT"
          TIMEOUT: timeout for the serial line (read). Default: 30
+         CNT_WHITES_LIMIT: Number of whitelines to abort the command after. Usually for the AT+RST cmd.
        Returns: list(status, data)
          status: True if OK, False on ERROR
          data:   contain other information gathered (a list)
+         timestamp_start: from time.time()
+         timestamp_end: from time.time()
     """
+        timestamp_start = time.time()
         time.sleep(1)
         if not self._serial.isOpen():
             self._log.debug("Opening serial device")
@@ -220,7 +225,6 @@ class ESP8266_ESP201(object):
         status = False
         cnt = 0  # count lines received (for debug)
         cnt_whites = 0  # count successive whitelines, abort on CNT_WHITES_LIMIT
-        CNT_WHITES_LIMIT = 10
         while True:
             self._log.debug("[{}] tmp response (w={}): {}, data: {}".format(cnt, cnt_whites, tmp_response, data))
             if tmp_response == b'OK':
@@ -274,7 +278,7 @@ class ESP8266_ESP201(object):
         self._log.debug("Restoring timeout from {} to {}".format(self._serial.getTimeout(), timeout))
         self._serial.setTimeout(timeout)
 
-        return {"status": status, "data": data}
+        return {"status": status, "data": data, "timestsamp_start": timestamp_start, "timestamp_end": time.time()}
 
     def check_OS(self):
         """Checks the platform (for the access to serial devices.
