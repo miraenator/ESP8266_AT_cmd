@@ -219,7 +219,8 @@ class ESP8266_ESP201(object):
         data = list()
         status = False
         cnt = 0  # count lines received (for debug)
-        cnt_whites = 0  # count successive whitelines, abort on some limit
+        cnt_whites = 0  # count successive whitelines, abort on CNT_WHITES_LIMIT
+        CNT_WHITES_LIMIT = 10
         while True:
             self._log.debug("[{}] tmp response (w={}): {}, data: {}".format(cnt, cnt_whites, tmp_response, data))
             if tmp_response == b'OK':
@@ -260,8 +261,8 @@ class ESP8266_ESP201(object):
             else:
                 cnt_whites += 1
 
-            if cnt_whites >= 10:
-                self._log.error("Too many empty received: {}, aborting cmd: {}".format(cnt_whites, cmd))
+            if cnt_whites >= CNT_WHITES_LIMIT:
+                self._log.error("Too many empty received: {}, aborting cmd: {}, data received so far: {}".format(cnt_whites, cmd, data))
                 self._log.debug("Aborting cmd: {} due to too many empty lines, data: {}".format(cmd, data))
                 break
             cnt += 1
